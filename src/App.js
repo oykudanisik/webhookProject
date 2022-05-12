@@ -169,7 +169,7 @@ function App() {
           <div><Input onChange={event => setWebhookRequestSecret(event.target.value)} placeholder='Request Secret'></Input></div><br></br>
           <div><Input onChange={event => setWebhookRequestHeaderName(event.target.value)} placeholder='Request Header Name'></Input></div><br></br>
           <div><Input onChange={event => setWebhookLabel(event.target.value)} placeholder='Label'></Input></div><br></br>
-          <Button variant="outlined" onClick={addNewWebhook}>Add</Button>
+          <Button variant="outlined" onClick={addNewWebhook}>Add Webhook</Button>
         </div>
       : ''}
     </div>
