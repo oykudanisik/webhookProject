@@ -69,9 +69,17 @@ function App() {
       .then(function (response) {
         console.log("DATA",response.data.content);
         response.data.content.map(d =>{
-          console.log(d)
+          console.log("buraaaaa",d)
+          let obj = {};
+          let key = d.setting;
+          let value = d.value;
+          console.log("key",key);
+          console.log("value",value);
+          obj[d.webhook_id] = {key : key, value:value};
+          console.log(obj);
           webhooks.push(d);
         })
+        
         setFormWebhooks(webhooks);
       })
       .catch(function (error) {
