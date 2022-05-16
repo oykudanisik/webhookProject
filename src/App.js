@@ -14,7 +14,7 @@ function App() {
   const [jotformAPI, setJotformAPI] = useState('');
   const [formStatus, setFormStatus] = useState(true);
   const [formUsername, setFormUsername] = useState('');
-  const [formWebhooks, setFormWebhooks] = useState([]);
+  const [formWebhooks, setFormWebhooks] = useState({});
   const [webhookURL, setWebhookURL] = useState('');
   const [webhookRequestSecret, setWebhookRequestSecret] = useState('');
   const [webhookRequestHeaderName, setWebhookRequestHeaderName] = useState('');
@@ -55,7 +55,11 @@ function App() {
   //
 
   useEffect(()=>
+
     async function getFormWebhooks() {
+      let obj = {};
+      let obj2 = {};
+
       let webhooks = []; 
       var config = {
         method: 'post',
@@ -70,17 +74,17 @@ function App() {
         console.log("DATA",response.data.content);
         response.data.content.map(d =>{
           console.log("buraaaaa",d)
-          let obj = {};
           let key = d.setting;
           let value = d.value;
           console.log("key",key);
           console.log("value",value);
-          obj[d.webhook_id] = {key : key, value:value};
+          obj2[key] = value;
+          console.log("obj 2", obj2);
+          obj[d.webhook_id] = obj2;
           console.log(obj);
           webhooks.push(d);
         })
-        
-        setFormWebhooks(webhooks);
+        setFormWebhooks(obj);
       })
       .catch(function (error) {
         console.log(error);
@@ -156,17 +160,15 @@ function App() {
       </div><br></br>
       {selectedJotformForm!=null ? 
         <div>
-         {formWebhooks.map(webhook =>{ 
-            console.log("webhook",webhook);
-              return (
-                <div>
-                <div value={webhook.webhook_id}>{webhook.setting} : {webhook.value}</div>
-                <Switch/>
-                <Button variant="outlined">Edit</Button>
-                <Button variant="outlined">History</Button>
-                </div>
-              )
-          })}
+        {Object.entries(formWebhooks).forEach(function(key, idx) {
+          console.log("key 1",key[1].webhookLabel);
+          console.log(key[1].webhookURL);
+          return (
+            <div>
+              {key[1].webhookLabel}
+            </div>
+          )
+        })}
         </div>
       : ''}
       <br></br>
