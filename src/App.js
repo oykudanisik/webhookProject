@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import Button from '@mui/material/Button';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import Input from '@mui/material/Input';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import Card from '@mui/material/Card';
@@ -18,12 +17,25 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import CloseIcon from '@mui/icons-material/Close';
 import Slide from '@mui/material/Slide';
-import { TransitionProps } from '@mui/material/transitions';
+import TextField from '@mui/material/TextField';
+import InputLabel from '@mui/material/InputLabel';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Paper from '@mui/material/Paper';
+import Draggable from 'react-draggable';
+
+import SelectUnstyled, { selectUnstyledClasses } from '@mui/base/SelectUnstyled';
+import OptionUnstyled, { optionUnstyledClasses } from '@mui/base/OptionUnstyled';
+import PopperUnstyled from '@mui/base/PopperUnstyled';
+import { styled } from '@mui/system';
+
+import AlertDialogSlide from './components/AlertDialogSlide';
 var axios = require('axios');
 
 function App() {
   const [jotformForms, setJotformForms] = useState([]);
-  const [selectedJotformForm, setSelectedJotformForm] = useState();
+  const [selectedJotformForm, setSelectedJotformForm] = useState('');
   const [jotformAPI, setJotformAPI] = useState('');
   const [formStatus, setFormStatus] = useState(true);
   const [formUsername, setFormUsername] = useState('');
@@ -42,7 +54,132 @@ function App() {
   const getJotformForm = 'https://o-danisik.jotform.dev/intern-api/get-jotform-forms';
   const getFormWebhooks = 'https://o-danisik.jotform.dev/intern-api/form-webhooks';
 
-
+  const blue = {
+    100: '#DAECFF',
+    200: '#99CCF3',
+    400: '#3399FF',
+    500: '#007FFF',
+    600: '#0072E5',
+    900: '#003A75',
+  };
+  
+  const grey = {
+    100: '#E7EBF0',
+    200: '#E0E3E7',
+    300: '#CDD2D7',
+    400: '#B2BAC2',
+    500: '#A0AAB4',
+    600: '#6F7E8C',
+    700: '#3E5060',
+    800: '#2D3843',
+    900: '#1A2027',
+  };
+  
+  const StyledButton = styled('button')(
+    ({ theme }) => `
+    font-family: IBM Plex Sans, sans-serif;
+    font-size: 0.875rem;
+    box-sizing: border-box;
+    min-height: calc(1.5em + 22px);
+    min-width: 320px;
+    background: ${theme.palette.mode === 'dark' ? grey[900] : '#fff'};
+    border: 1px solid ${theme.palette.mode === 'dark' ? grey[800] : grey[300]};
+    border-radius: 0.75em;
+    margin: 0.5em;
+    padding: 10px;
+    text-align: left;
+    line-height: 1.5;
+    color: ${theme.palette.mode === 'dark' ? grey[300] : grey[900]};
+  
+    &:hover {
+      background: ${theme.palette.mode === 'dark' ? '' : grey[100]};
+      border-color: ${theme.palette.mode === 'dark' ? grey[700] : grey[400]};
+    }
+  
+    &.${selectUnstyledClasses.focusVisible} {
+      outline: 3px solid ${theme.palette.mode === 'dark' ? blue[600] : blue[100]};
+    }
+  
+    &.${selectUnstyledClasses.expanded} {
+      &::after {
+        content: '▴';
+      }
+    }
+  
+    &::after {
+      content: '▾';
+      float: right;
+    }
+    `,
+  );
+  
+  const StyledListbox = styled('ul')(
+    ({ theme }) => `
+    font-family: IBM Plex Sans, sans-serif;
+    font-size: 0.875rem;
+    box-sizing: border-box;
+    padding: 5px;
+    margin: 10px 0;
+    min-width: 320px;
+    background: ${theme.palette.mode === 'dark' ? grey[900] : '#fff'};
+    border: 1px solid ${theme.palette.mode === 'dark' ? grey[800] : grey[300]};
+    border-radius: 0.75em;
+    color: ${theme.palette.mode === 'dark' ? grey[300] : grey[900]};
+    overflow: auto;
+    outline: 0px;
+    `,
+  );
+  
+  const StyledOption = styled(OptionUnstyled)(
+    ({ theme }) => `
+    list-style: none;
+    padding: 8px;
+    border-radius: 0.45em;
+    cursor: default;
+  
+    &:last-of-type {
+      border-bottom: none;
+    }
+  
+    &.${optionUnstyledClasses.selected} {
+      background-color: ${theme.palette.mode === 'dark' ? blue[900] : blue[100]};
+      color: ${theme.palette.mode === 'dark' ? blue[100] : blue[900]};
+    }
+  
+    &.${optionUnstyledClasses.highlighted} {
+      background-color: ${theme.palette.mode === 'dark' ? grey[800] : grey[100]};
+      color: ${theme.palette.mode === 'dark' ? grey[300] : grey[900]};
+    }
+  
+    &.${optionUnstyledClasses.highlighted}.${optionUnstyledClasses.selected} {
+      background-color: ${theme.palette.mode === 'dark' ? blue[900] : blue[100]};
+      color: ${theme.palette.mode === 'dark' ? blue[100] : blue[900]};
+    }
+  
+    &.${optionUnstyledClasses.disabled} {
+      color: ${theme.palette.mode === 'dark' ? grey[700] : grey[400]};
+    }
+  
+    &:hover:not(.${optionUnstyledClasses.disabled}) {
+      background-color: ${theme.palette.mode === 'dark' ? grey[800] : grey[100]};
+      color: ${theme.palette.mode === 'dark' ? grey[300] : grey[900]};
+    }
+    `,
+  );
+  
+  const StyledPopper = styled(PopperUnstyled)`
+    z-index: 1;
+  `;
+  
+  const CustomSelect = React.forwardRef(function CustomSelect(props, ref) {
+    const components = {
+      Root: StyledButton,
+      Listbox: StyledListbox,
+      Popper: StyledPopper,
+      ...props.components,
+    };
+    return <SelectUnstyled {...props} ref={ref} components={components} />;
+});
   //
   // FULL-SCREEN DIALOG 
   //
@@ -93,7 +230,7 @@ function App() {
             <ListItem button>
               <ListItemText
                 primary="Data Recieved"
-                secondary={dataRecieved}
+                secondary={JSON.stringify(dataRecieved, null, "\t")}
               />
             </ListItem>
           </List>
@@ -101,7 +238,6 @@ function App() {
       </div>
     );
   }
-
 
   //
   // GET THE FORMS AFTER THE JOTFORM API IS ENTERED
@@ -148,24 +284,32 @@ function App() {
       axios(config)
       .then(function (response) {
         console.log("DATA",response.data);
-        response.data.content.map(d =>{
-          let key = d.setting;
-          let value = d.value;
-          console.log("key",key);
-          console.log("value",value);
-          obj2[key] = value;
-          console.log("obj 2", obj2);
-          obj[d.webhook_id] = obj2;
-          console.log(obj);
-          webhooks.push(d);
+        response.data.content.forEach(dat => {
+          dat.map(d =>{
+            let key = d.setting;
+            let value = d.value;
+            console.log("key",key);
+            console.log("value",value);
+            obj2[key] = value;
+            console.log("obj 2", obj2);
+            obj[d.webhook_id] = obj2;
+            console.log(obj);
+            webhooks.push(d);
+          })
+          obj2=[];
+
+          setFormWebhooks(obj);
         })
-        setFormWebhooks(obj);
       })
       .catch(function (error) {
         console.log(error);
       });
 
   },[selectedJotformForm]);
+
+  //
+  // DETAILS OF THE WEBHOOK DATA SENT DATS RECIEVED (WEBHOOK_RUNS)
+  // 
 
   async function getWebhookHistoryDetailsFunction() {
     var config = {
@@ -179,24 +323,41 @@ function App() {
     axios(config)
     .then(function (response) {
       console.log("DATA",response.data.content);
-      response.data.content.map(d =>{
-        let data_recieved = d.data_recieved;
-        let data_sent = d.data_sent;
-        console.log("data_recieved",JSON.parse(data_recieved));
-        console.log("data_sent",JSON.parse(data_sent)); 
-        setDataSent(data_sent);
-        setDataRecieved(data_recieved);
-        setSelectedWebhookId(d.webhook_id);
-      })
+      if(response.data.content.length == 0){
+        setDataSent('data_sent');
+        setDataRecieved('data_recieved');
+        setSelectedWebhookId('d.webhook_id');
+      } else{
+        response.data.content.map(d =>{
+          let data_recieved = d.data_recieved;
+          let data_sent = d.data_sent;
+          console.log("data_recieved",JSON.parse(data_recieved));
+          console.log("data_sent",JSON.parse(data_sent)); 
+          setDataSent(data_sent);
+          setDataRecieved(data_recieved);
+          setSelectedWebhookId(d.webhook_id);
+        })
+      }
+      
     })
     .catch(function (error) {
       console.log(error);
     });
   }
+
+
   //
   // ADDING A NEW WEBHOOK
   //
-  const addNewWebhook=()=>{
+  const addNewWebhook = () =>{
+    var formEl = document.forms.webhookData;
+    var formData = new FormData(formEl);
+
+    var webhookURL = formData.get('webhookURL');
+    var webhookRequestSecret = formData.get('webhookRequestSecret');
+    var webhookRequestHeaderName = formData.get('webhookRequestHeaderName');
+    var webhookLabel = formData.get('webhookLabel');
+
     let settingsObject = {
       webhookURL: webhookURL,
       webhookRequestSecret: webhookRequestSecret,
@@ -238,21 +399,47 @@ function App() {
   }
 
   const allowWebhookAdding =(e)=>{
-    console.log("truefalse",e)
+    console.log("truefalse",e);
     setAllowWebhook(!e);
   }
   
-  const getWebhookHistoryDetails = (e) =>{
-    console.log("e", e);
-    setSelectedWebhookHistory(e);
+  const setJotfromAPIFunction = (e) =>{
+    console.log("event", e.target.value);
+    setJotformAPI(e.target.value);
+  }
+  const TransitionWebhook = React.forwardRef(function TransitionWebhook(props, ref) {
+    return <Slide direction="up" ref={ref} {...props} />;
+  });
+  const [openWebhook, setOpenWebhook] = React.useState(false);
+
+  const handleClickOpenWebhook = (e) => {
+    setOpenWebhook(true);
+    allowWebhookAdding(e.target.value);
+  };
+
+  const handleCloseWebhook = () => {
+    setOpenWebhook(false);
+  };
+  function PaperComponent(props) {
+    return (
+      <Draggable
+        handle="#draggable-dialog-title"
+        cancel={'[class*="MuiDialogContent-root"]'}
+      >
+        <Paper {...props} />
+      </Draggable>
+    );
   }
 
   return (
     <div className="App">
-      <Input onChange={event => setJotformAPI(event.target.value)}  type="text" name="name" placeholder='Jotform API Key'/>
+      <br></br>
+      {/* PROBLEM IS THIS PART setJotfromAPIFunction FUNCTION DOESNT UPDATE THE STATE IMMEDIATELY */}
+      <TextField onChange={setJotfromAPIFunction} label="Jotform API Key" type="text" name="name" placeholder='Jotform API Key'/>
       <div><br></br>
-      <Select labelId="demo-simple-select-label" id="demo-simple-select" label="Select Form" onChange = {handleSelect}>
-         <MenuItem value = "Select Form">Select Form</MenuItem>
+      <InputLabel id="demo-simple-select-label">Select Form</InputLabel>
+      <Select labelId="demo-simple-select-label" id="demo-simple-select" label="Select" onChange = {handleSelect}>
+         <MenuItem  value = "Select Form">Select Form</MenuItem>
           {jotformForms.map(jotformForm =>{
             if(jotformForm.status !== "DELETED"){
               return (
@@ -266,34 +453,56 @@ function App() {
       <FullScreenDialog/>
       {selectedJotformForm != null ?
           Object.entries(formWebhooks).map((key, value) => {
+            console.log(key[0]);
           return (
-            <Card sx={{ maxWidth: 345 }} height="140" variant="outlined">
+            <div display="block" marginLeft="auto">
+            <Card  sx={{maxWidth: 600 }} variant="outlined">
               <CardContent>
               <Typography gutterBottom variant="h5" component="div">
-              {key[1].webhookRequestSecret}
+              {key[1].webhookURL}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-              {key[1].webhookURL}
+              {key[1].webhookLabel}
               </Typography>
             </CardContent>
             <CardActions>
-              <Button size="small" color="primary" onClick={event => handleClickOpen(event.target.value)}  value ={key[1].webhook_id} variant="outlined">edit</Button>
+              <Button size="small" color="primary" onClick={event => handleClickOpen(event.target.value)}  value ={key[0]} variant="outlined">HISTORY</Button>
             </CardActions>
             </Card>
+            </div>
           )
         })
-      : 'no form'}
-      <br></br>
-      <Button variant="outlined" onClick={event => allowWebhookAdding(event.target.value)}>Add New Webhook</Button>
-      {allowWebhook ?
-        <div>
-          <div><Input onChange={event => setWebhookURL(event.target.value)} placeholder='URL'></Input></div><br></br>
-          <div><Input onChange={event => setWebhookRequestSecret(event.target.value)} placeholder='Request Secret'></Input></div><br></br>
-          <div><Input onChange={event => setWebhookRequestHeaderName(event.target.value)} placeholder='Request Header Name'></Input></div><br></br>
-          <div><Input onChange={event => setWebhookLabel(event.target.value)} placeholder='Label'></Input></div><br></br>
-          <Button variant="outlined" onClick={addNewWebhook}>Add Webhook</Button>
-        </div>
       : ''}
+      <br></br>
+      {selectedJotformForm != null ?
+       <div>
+      <Button variant="outlined" onClick={handleClickOpenWebhook}>
+        Add New Webhook
+      </Button>
+      <Dialog
+        open={openWebhook}
+        onClose={handleCloseWebhook}
+        PaperComponent={PaperComponent}
+        aria-labelledby="draggable-dialog-title"
+      >
+        <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
+          Add New Webhook
+        </DialogTitle>
+        <DialogContent>
+          <form action="" method="post" id="webhookData">
+          <TextField id = "webhookURL" name = "webhookURL"  placeholder='URL'></TextField><br></br>
+          <TextField id = "webhookRequestSecret" name = "webhookRequestSecret" placeholder='Request Secret'></TextField><br></br>
+          <TextField id = "webhookRequestHeaderName" name = "webhookRequestHeaderName" placeholder='Request Header Name'></TextField><br></br>
+          <TextField id = "webhookLabel" name = "webhookLabel" placeholder='Label'></TextField><br></br>
+          </form>
+        </DialogContent>
+        <DialogActions>
+        <Button onClick={handleCloseWebhook}>Cancel</Button>
+        <Button type = "submit" variant="outlined" onClick={addNewWebhook}>Add Webhook</Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+    : ''}
     </div>
   );
 }
